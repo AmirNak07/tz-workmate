@@ -1,5 +1,6 @@
 import argparse
 import csv
+import re
 from collections.abc import Callable
 from typing import Any
 
@@ -15,14 +16,15 @@ def read_csv(file_path: str) -> list[dict[str, str]]:
 
 def parse_where_param(where: str) -> tuple[str, str, str]:
     """Parse where parameter into column, operator, value."""
-    operators = [">=", "<=", ">", "<", "="]
-    for op in operators:
-        if op in where:
-            parts = where.split(op)
-            if len(parts) != 2 or parts[0] == "" or parts[1] == "":
-                raise ValueError(f"Invalid where parameter: {where}")
-            return parts[0], op, parts[1]
-    raise ValueError(f"Invalid where parameter: {where}")
+    pattern = r"^([^<>=!]+)(>=|<=|=|<|>)(.+)$"
+    m = re.match(pattern, where)
+    if not m:
+        raise ValueError(f"Invalid where parameter: {where}")
+    col, op, val = m.groups()
+
+    if not col or not val:
+        raise ValueError(f"Invalid where parameter: {where}")
+    return col, op, val
 
 
 def parse_aggregate_param(aggregate: str) -> tuple[str, str]:
