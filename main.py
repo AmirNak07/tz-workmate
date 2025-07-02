@@ -19,15 +19,16 @@ def parse_where_param(where: str) -> tuple[str, str, str]:
     for op in operators:
         if op in where:
             parts = where.split(op)
-            if len(parts) == 2:
-                return parts[0], op, parts[1]
+            if len(parts) != 2 or parts[0] == "" or parts[1] == "":
+                raise ValueError(f"Invalid where parameter: {where}")
+            return parts[0], op, parts[1]
     raise ValueError(f"Invalid where parameter: {where}")
 
 
 def parse_aggregate_param(aggregate: str) -> tuple[str, str]:
     """Parse aggregate parameter into operation and column."""
     parts = aggregate.split("=")
-    if len(parts) != 2:
+    if len(parts) != 2 or parts[0] == "" or parts[1] == "":
         raise ValueError(f"Invalid aggregate parameter: {aggregate}")
     return parts[0], parts[1]
 
