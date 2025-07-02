@@ -75,12 +75,12 @@ def apply_aggregation(data, column, operation):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Process CSV file.")
-    parser.add_argument("file", help="Path to CSV file")
+    parser.add_argument("--file", help="Path to CSV file", required=True, dest="<FILE_PATH>")
     parser.add_argument(
-        "--where", help='Filter condition (e.g., "price>500")', type=str
+        "--where", help='Filter condition (e.g., "price>500")', type=str, dest=""
     )
     parser.add_argument(
-        "--aggregate", help='Aggregate orepation (e.g., "avg=price")', type=str
+        "--aggregate", help='Aggregate orepation (e.g., "avg=price")', type=str, dest=""
     )
 
     args = parser.parse_args()
