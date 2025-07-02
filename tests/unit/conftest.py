@@ -2,7 +2,7 @@ import pytest
 
 
 @pytest.fixture
-def test_data():
+def test_dict_data():
     return [
         {"name": "iphone 15 pro", "brand": "apple", "price": "999", "rating": "4.9"},
         {
