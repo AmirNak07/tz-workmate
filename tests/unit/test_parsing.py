@@ -18,6 +18,7 @@ from main import parse_aggregate_param, parse_where_param
         ("price<", "price", "<", "", pytest.raises(ValueError)),
         (">=100", "", ">=", "100", pytest.raises(ValueError)),
         ("price>=price", "price", ">=", "price", does_not_raise()),
+        ("price!=500", "price", "!=", "500", pytest.raises(ValueError)),
     ],
 )
 def test_parse_where_param(
