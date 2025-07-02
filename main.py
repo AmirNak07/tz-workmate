@@ -20,6 +20,13 @@ def parse_where_param(where: str):
     raise ValueError(f"Invalid where parameter: {where}")
 
 
+def parse_aggregate_param(aggregate: str):
+    parts = aggregate.split("=")
+    if len(parts) != 2:
+        raise ValueError(f"Invalid aggregate parameter: {aggregate}")
+    return parts[0], parts[1]
+
+
 def apply_filter(data, column, operator, value):
     operators = {
         ">": lambda x, y: x > y,
@@ -47,6 +54,25 @@ def apply_filter(data, column, operator, value):
     return filtered
 
 
+def apply_aggregation(data, column, operation):
+    try:
+        values = [float(row[column]) for row in data]
+    except ValueError:
+        raise ValueError(f"Cannot aggregate non-numeric column: {column}") from None
+
+    if not values:
+        return {"operation": operation, "column": column, "value": "N/A"}
+
+    operations = {"avg": lambda x: sum(x) / len(x), "min": min, "max": max}
+
+    op_func = operations.get(operation)
+    if op_func is None:
+        raise ValueError(f"Unsuppoeted operation: {operation}")
+
+    result = op_func(values)
+    return {"operation": operation, "column": column, "value": result}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Process CSV file.")
     parser.add_argument("file", help="Path to CSV file")
@@ -65,7 +91,12 @@ def main() -> None:
         column, operator, value = parse_where_param(args.where)
         data = apply_filter(data, column, operator, value)
 
-    print(tabulate(data, headers="keys", tablefmt="grid"))
+    if args.aggregate:
+        column, operation = parse_aggregate_param(args.aggregate)
+        result = apply_aggregation(data, column, operation)
+        print(tabulate([[result["value"]]], headers=[result["operation"]], tablefmt="grid"))
+    else:
+        print(tabulate(data, headers="keys", tablefmt="grid"))
 
 
 if __name__ == "__main__":
