@@ -1,4 +1,50 @@
 import argparse
+import csv
+
+from tabulate import tabulate
+
+
+def read_csv(file_path: str):
+    with open(file_path, encoding="utf-8") as file:
+        reader = csv.DictReader(file)
+        return list(reader)
+
+
+def parse_where_param(where: str):
+    operators = [">=", "<=", ">", "<", "="]
+    for op in operators:
+        if op in where:
+            parts = where.split(op)
+            if len(parts) == 2:
+                return parts[0], op, parts[1]
+    raise ValueError(f"Invalid where parameter: {where}")
+
+
+def apply_filter(data, column, operator, value):
+    operators = {
+        ">": lambda x, y: x > y,
+        ">=": lambda x, y: x >= y,
+        "<": lambda x, y: x < y,
+        "<=": lambda x, y: x <= y,
+        "=": lambda x, y: x == y,
+    }
+
+    op_func = operators.get(operator)
+    if op_func is None:
+        raise ValueError("Unsupported operator: {operator}")
+
+    filtered = []
+    for row in data:
+        try:
+            row_val = float(row[column]) if "." in row[column] else int(row[column])
+            cmp_val = float(value) if "." in value else int(value)
+            if op_func(row_val, cmp_val):
+                filtered.append(row)
+        except ValueError:
+            if op_func(row[column].lower(), value.lower()):
+                filtered.append(row)
+
+    return filtered
 
 
 def main() -> None:
@@ -13,7 +59,13 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    print(args)
+    data = read_csv(args.file)
+
+    if args.where:
+        column, operator, value = parse_where_param(args.where)
+        data = apply_filter(data, column, operator, value)
+
+    print(tabulate(data, headers="keys", tablefmt="grid"))
 
 
 if __name__ == "__main__":
